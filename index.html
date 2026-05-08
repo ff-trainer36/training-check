@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="トレーニング">
+<title>消防職員 トレーニングチェックシート</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: #0F1923;
+    color: #fff;
+    font-family: 'Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif;
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 70px;
+  }
+  #header {
+    background: linear-gradient(135deg,#1A3D6B,#2C5F9E);
+    padding: 20px 16px 14px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+  }
+  #header .subtitle { font-size: 11px; color: #90B4D8; letter-spacing: 2px; margin-bottom: 4px; }
+  #header .title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+  .tab-row { display: flex; gap: 8px; margin-top: 12px; }
+  .tab-btn {
+    flex: 1; padding: 7px 0; border-radius: 20px; border: 2px solid rgba(255,255,255,0.4); cursor: pointer;
+    font-size: 13px; font-weight: bold;
+    font-family: 'Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif;
+    background: rgba(255,255,255,0.15); color: #fff;
+    transition: all .2s;
+  }
+  .tab-btn.active { background: #fff; color: #1A3D6B; border-color: #fff; }
+  .month-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 10px;
+  }
+  .nav-btn {
+    background: #fff; border: none; border-radius: 50%;
+    width: 42px; height: 42px; font-size: 22px; color: #1A3D6B; cursor: pointer;
+    font-weight: bold; line-height: 1;
+  }
+  .month-label { text-align: center; }
+  .month-name { font-size: 26px; font-weight: bold; color: #111; letter-spacing: 1px; }
+  .month-days { font-size: 12px; color: #555; margin-top: 3px; }
+  .legend {
+    display: flex; gap: 6px; padding: 0 16px 12px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #ccc; }
+  .legend-dot {
+    width: 20px; height: 20px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: bold;
+  }
+  .legend-hint { font-size: 11px; color: #90B4D8; margin-left: auto; font-weight: bold; }
+  .day-row { margin-bottom: 4px; }
+  .row-label {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px 6px;
+    margin: 0 16px;
+    border-radius: 0 8px 8px 0;
+  }
+  .row-label .icon { font-size: 16px; }
+  .row-label .day-name { font-weight: bold; font-size: 13px; }
+  .row-label .day-sub { font-size: 11px; color: #aaa; margin-left: 6px; }
+  .row-label .done-count { margin-left: auto; font-size: 12px; font-weight: bold; }
+  .cal-scroll { overflow-x: auto; padding: 6px 16px; -webkit-overflow-scrolling: touch; }
+  .cal-inner { display: flex; gap: 4px; min-width: max-content; }
+  .cal-cell { text-align: center; }
+  .cal-num { font-size: 9px; margin-bottom: 2px; }
+  .cal-btn {
+    width: 28px; height: 28px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: bold;
+    background: rgba(255,255,255,0.06); color: #444;
+    transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif;
+  }
+  .cal-btn:active { transform: scale(0.9); }
+  .summary-card {
+    margin: 16px; padding: 14px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .summary-title { font-size: 12px; color: #90B4D8; font-weight: bold; margin-bottom: 10px; }
+  .progress-row { margin-bottom: 8px; }
+  .progress-label { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 12px; }
+  .progress-bar-bg { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); }
+  .progress-bar { height: 100%; border-radius: 3px; transition: width .4s; }
+  #stats-tab { padding: 16px; }
+  .total-card {
+    background: linear-gradient(135deg,#1A3D6B,#2C5F9E);
+    border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center;
+  }
+  .total-pct { font-size: 48px; font-weight: bold; line-height: 1; }
+  .total-label { font-size: 13px; color: #90B4D8; margin-top: 6px; }
+  .total-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+  .stats-month-title { font-size: 12px; color: #90B4D8; font-weight: bold; margin-bottom: 10px; letter-spacing: 1px; }
+  .month-stat-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
+    border: 1px solid transparent; cursor: pointer;
+    transition: border-color .2s;
+  }
+  .month-stat-card.current { border-color: #5B9FD8; background: rgba(44,95,158,0.18); }
+  .month-stat-card.current .month-stat-name { color: #7EC8FF; }
+  .month-stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .month-stat-name { font-weight: bold; font-size: 13px; }
+  .month-stat-nums { display: flex; gap: 8px; font-size: 11px; }
+  .multi-bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; display: flex; }
+  .tip-box {
+    background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2);
+    border-radius: 12px; padding: 12px; margin-top: 8px;
+  }
+  .tip-title { font-size: 12px; color: #FFD700; font-weight: bold; margin-bottom: 6px; }
+  .tip-body { font-size: 11px; color: #aaa; line-height: 1.7; }
+  #bottom-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: rgba(15,25,35,0.95);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 8px 16px;
+    text-align: center; font-size: 10px; color: #555;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .cal-scroll::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="subtitle">🚒 消防職員トレーニング</div>
+  <div class="title">チェックシート</div>
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="switchTab('check')">📋 記録</button>
+    <button class="tab-btn" onclick="switchTab('stats')">📊 統計</button>
+  </div>
+</div>
+<div id="check-tab" class="tab-content active">
+  <div class="month-nav">
+    <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+    <div class="month-label">
+      <div class="month-name" id="month-name"></div>
+      <div class="month-days" id="month-days-label"></div>
+    </div>
+    <button class="nav-btn" onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#F0F0F0;color:#999">－</div>未記録</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2ECC71;color:#fff">✓</div>実施</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#F39C12;color:#fff">△</div>軽め</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#E74C3C;color:#fff">✗</div>休み</div>
+    <div class="legend-hint">タップで切替</div>
+  </div>
+  <div id="day-rows"></div>
+  <div class="summary-card" id="summary-card"></div>
+</div>
+<div id="stats-tab" class="tab-content">
+  <div class="total-card">
+    <div class="total-pct" id="total-pct">0%</div>
+    <div class="total-label">年間達成率（実施＋軽め）</div>
+    <div class="total-sub" id="total-sub"></div>
+  </div>
+  <div class="stats-month-title">月別実施回数</div>
+  <div id="month-stats-list"></div>
+  <div class="tip-box">
+    <div class="tip-title">💡 継続のコツ</div>
+    <div class="tip-body">
+      週3回のペースを守ることが最優先。<br>
+      1回休んでも次の勤務日に再開すればOK！<br>
+      出動・夜間対応が続いた日は休養を優先しましょう。
+    </div>
+  </div>
+</div>
+<div id="bottom-bar">記録は自動保存されます · 消防職員トレーニングチェックシート</div>
+<script>
+const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
+const MONTH_NAMES = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+const DAY_TYPES = [
+  { key:"d1", label:"DAY1", sub:"胸・肩・三頭筋", color:"#C0392B", bg:"rgba(192,57,43,0.12)", icon:"💪" },
+  { key:"d2", label:"DAY2", sub:"背中・二頭筋",   color:"#1A6B3C", bg:"rgba(26,107,60,0.12)", icon:"🏋️" },
+  { key:"d3", label:"DAY3", sub:"下半身・体幹",   color:"#1A3D6B", bg:"rgba(26,61,107,0.12)", icon:"🦵" },
+];
+const STATUS_LIST = [
+  { val:"",  bg:"rgba(255,255,255,0.06)", fg:"#444", disp:"·" },
+  { val:"✓", bg:"#2ECC71", fg:"#fff",  disp:"✓" },
+  { val:"△", bg:"#F39C12", fg:"#fff",  disp:"△" },
+  { val:"✗", bg:"#E74C3C", fg:"#fff",  disp:"✗" },
+];
+const STORAGE_KEY = "firefighter_training_checks";
+const now = new Date();
+let currentMonth = now.getMonth();
+let checks = {};
+try { const s = localStorage.getItem(STORAGE_KEY); if(s) checks = JSON.parse(s); } catch(_){}
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checks)); } catch(_){} }
+function getVal(m, d, dk) { return checks[`${m}-${d}-${dk}`] || ""; }
+function cycleVal(m, d, dk) {
+  const cur = getVal(m,d,dk);
+  const idx = STATUS_LIST.findIndex(s=>s.val===cur);
+  checks[`${m}-${d}-${dk}`] = STATUS_LIST[(idx+1) % STATUS_LIST.length].val;
+  save(); renderCheck();
+}
+function getMonthStats(m) {
+  const days = DAYS_IN_MONTH[m], stats = {};
+  DAY_TYPES.forEach(dt => {
+    let done=0, light=0;
+    for(let d=1;d<=days;d++){ const v=getVal(m,d,dt.key); if(v==="✓")done++; if(v==="△")light++; }
+    stats[dt.key]={done,light,total:days};
+  });
+  return stats;
+}
+function getTotalStats() {
+  let total=0, done=0;
+  for(let m=0;m<12;m++) DAY_TYPES.forEach(dt=>{
+    for(let d=1;d<=DAYS_IN_MONTH[m];d++){ total++; const v=getVal(m,d,dt.key); if(v==="✓"||v==="△")done++; }
+  });
+  return {total,done,pct:total?Math.round(done/total*100):0};
+}
+function changeMonth(dir) { currentMonth=(currentMonth+dir+12)%12; renderCheck(); }
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='check')||(i===1&&t==='stats')));
+  document.getElementById('check-tab').classList.toggle('active',t==='check');
+  document.getElementById('stats-tab').classList.toggle('active',t==='stats');
+  if(t==='stats') renderStats();
+}
+function renderCheck() {
+  const days=DAYS_IN_MONTH[currentMonth], today=now.getDate(), isThisMonth=now.getMonth()===currentMonth;
+  document.getElementById('month-name').textContent=MONTH_NAMES[currentMonth];
+  document.getElementById('month-days-label').textContent=days+'日間';
+  const rowsEl=document.getElementById('day-rows'); rowsEl.innerHTML='';
+  DAY_TYPES.forEach(dt=>{
+    let doneCount=0;
+    for(let d=1;d<=days;d++) if(getVal(currentMonth,d,dt.key)==="✓") doneCount++;
+    const rowDiv=document.createElement('div'); rowDiv.className='day-row';
+    const labelDiv=document.createElement('div'); labelDiv.className='row-label';
+    labelDiv.style.borderLeft=`4px solid ${dt.color}`; labelDiv.style.background=dt.bg;
+    labelDiv.innerHTML=`<span class="icon">${dt.icon}</span><div><span class="day-name" style="color:${dt.color}">${dt.label}</span><span class="day-sub">${dt.sub}</span></div><span class="done-count" style="color:${dt.color}">${doneCount}回</span>`;
+    rowDiv.appendChild(labelDiv);
+    const scrollDiv=document.createElement('div'); scrollDiv.className='cal-scroll';
+    const innerDiv=document.createElement('div'); innerDiv.className='cal-inner';
+    for(let d=1;d<=days;d++){
+      const val=getVal(currentMonth,d,dt.key), st=STATUS_LIST.find(s=>s.val===val)||STATUS_LIST[0], isToday=isThisMonth&&d===today;
+      const cell=document.createElement('div'); cell.className='cal-cell';
+      const numEl=document.createElement('div'); numEl.className='cal-num';
+      numEl.style.color=isToday?'#FFD700':'#666'; numEl.style.fontWeight=isToday?'bold':'normal'; numEl.textContent=d;
+      const btn=document.createElement('button'); btn.className='cal-btn';
+      btn.style.background=st.bg; btn.style.color=st.fg;
+      if(isToday){btn.style.outline='2px solid #FFD700';btn.style.outlineOffset='1px';}
+      btn.textContent=
